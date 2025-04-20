@@ -1,118 +1,114 @@
 <template>
+  <Toast />
+  <!-- Must be here -->
   <div class="main-form">
     <Form
       :resolver="resolver"
+      :initialValues="{
+        firstName: '',
+        lastName: '',
+        gender: '',
+        dob: null,
+      }"
       @submit="onFormSubmit"
       class="flex flex-col gap-4 w-full sm:w-80"
     >
       <!-- First Name -->
-      <FormField v-slot="$field" name="firstName" class="flex flex-col gap-1">
+      <FormField v-slot="$field" name="firstName">
         <InputText v-model="$field.modelValue" placeholder="First Name" />
-        <Message
-          v-if="$field?.invalid"
-          severity="error"
-          size="small"
-          variant="simple"
-        >
+        <Message v-if="$field?.invalid" severity="error">
           {{ $field.error?.message }}
         </Message>
       </FormField>
 
       <!-- Last Name -->
-      <FormField v-slot="$field" name="lastName" class="flex flex-col gap-1">
+      <FormField v-slot="$field" name="lastName">
         <InputText v-model="$field.modelValue" placeholder="Last Name" />
-        <Message
-          v-if="$field?.invalid"
-          severity="error"
-          size="small"
-          variant="simple"
-        >
+        <Message v-if="$field?.invalid" severity="error">
+          {{ $field.error?.message }}
+        </Message>
+      </FormField>
+
+      <!-- Gender -->
+      <FormField v-slot="$field" name="gender">
+        <div class="flex gap-4 items-center">
+          <RadioButton
+            inputId="male"
+            value="Male"
+            v-model="$field.modelValue"
+          />
+          <label for="male">Male</label>
+
+          <RadioButton
+            inputId="female"
+            value="Female"
+            v-model="$field.modelValue"
+          />
+          <label for="female">Female</label>
+        </div>
+        <Message v-if="$field?.invalid" severity="error">
           {{ $field.error?.message }}
         </Message>
       </FormField>
 
       <!-- Date of Birth -->
-      <FormField v-slot="$field" name="dob" class="flex flex-col gap-1">
-        <Calendar v-model="$field.modelValue" placeholder="Date of Birth" />
-        <Message
-          v-if="$field?.invalid"
-          severity="error"
-          size="small"
-          variant="simple"
-        >
+      <FormField v-slot="$field" name="dob">
+        <!-- <Calendar v-model="$field.modelValue" placeholder="Date of Birth" /> -->
+        <DatePicker v-model="$field.modelValue" placeholder="Date of Birth" />
+
+        <Message v-if="$field?.invalid" severity="error">
           {{ $field.error?.message }}
         </Message>
       </FormField>
 
-      <!-- Gender Checkboxes -->
-      <FormField v-slot="$field" name="gender" class="flex flex-col gap-1">
-        <div class="flex flex-col gap-2">
-          <div class="flex items-center gap-2">
-            <Checkbox
-              inputId="men"
-              name="gender"
-              value="Men"
-              v-model="$field.modelValue"
-            />
-            <label for="men">Men</label>
-          </div>
-          <div class="flex items-center gap-2">
-            <Checkbox
-              inputId="women"
-              name="gender"
-              value="Women"
-              v-model="$field.modelValue"
-            />
-            <label for="women">Women</label>
-          </div>
-        </div>
-        <Message
-          v-if="$field?.invalid"
-          severity="error"
-          size="small"
-          variant="simple"
-        >
-          {{ $field.error?.message }}
-        </Message>
-      </FormField>
-
-      <Button type="submit" severity="primary" label="Submit" />
+      <Button type="submit" label="Submit" />
     </Form>
   </div>
+  <!-- component -->
+ 
 </template>
-
 <script setup>
-import { zodResolver } from "@primevue/forms/resolvers/zod";
 import { z } from "zod";
+import { zodResolver } from "@primevue/forms/resolvers/zod";
 
-import { useToast } from "primevue/usetoast";
+import { useToast } from "primevue/usetoast"; // ✅ add this line
+// import EmployeeData from "./EmployeeData.vue";
+import { ref } from "vue";
 
-// Toast setup
+import { defineEmits } from "vue";
+
+const emit = defineEmits(["add-employee"]);
+
 const toast = useToast();
-
-// Zod schema
+const myData = ref({});
+// Define the form validation schema
 const resolver = zodResolver(
   z.object({
-    firstName: z.string().min(1, { message: "First name is required" }),
-    lastName: z.string().min(1, { message: "Last name is required" }),
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    gender: z.string().min(1, "Please select a gender"),
     dob: z.date({ required_error: "Date of birth is required" }),
-    gender: z
-      .array(z.string())
-      .min(1, { message: "Select at least one gender" }),
   })
 );
-
-// On submit
-const onFormSubmit = ({ data, valid }) => {
-  if (valid) {
+const onFormSubmit = (formData) => {
+  if (formData.valid) {
+    emit("add-employee", formData.values); // Emit the event with the form data
     toast.add({
       severity: "success",
-      summary: `Submitted: ${data.firstName} ${data.lastName}`,
-      detail: `DOB: ${data.dob.toLocaleDateString()} - Gender: ${data.gender.join(
-        ", "
-      )}`,
-      life: 4000,
+      summary: "Success",
+      detail: "Form submitted successfully!",
+      life: 3000,
     });
+    // myData.value = formData.values; // ✅ add this line
+    // console.log("add-employee", myData);
+  } else {
+    toast.add({
+      severity: "error",
+      summary: "Validation Error",
+      detail: "Please correct the form errors.",
+      life: 3000,
+    });
+    console.log("❌ Invalid form data");
   }
 };
 </script>

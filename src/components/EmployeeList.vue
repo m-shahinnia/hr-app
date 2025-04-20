@@ -4,7 +4,9 @@
       <div class="employee-info">
         <p><strong>Name:</strong> {{ employee.name }}</p>
         <p><strong>Last Name:</strong> {{ employee.lastName }}</p>
+
         <p><strong>Gender:</strong> {{ employee.gender }}</p>
+        <p><strong>date of berathDay:</strong> {{ employee.dob }}</p>
       </div>
 
       <div class="employee-actions">
@@ -14,7 +16,7 @@
         />
         <i
           class="pi pi-trash action-icon delete"
-          @click="deleteEmployee(employee)"
+          @click="deleteEmployee(employee.id)"
         />
       </div>
     </li>
@@ -24,19 +26,26 @@
 <script setup>
 // main.js or main.ts
 import "primeicons/primeicons.css";
-
-import { defineProps } from "vue";
+import { defineProps, defineEmits } from "vue";
+const emit = defineEmits([
+  "delete-employee",
+  "edit-employee", // if you also emit an edit event later
+]);
 
 defineProps({
-  employees: Array,
+  employees: {
+    type: Array,
+    required: true,
+  },
 });
 
 const editEmployee = (employee) => {
   console.log("Edit:", employee);
 };
-
-const deleteEmployee = (employee) => {
-  console.log("Delete:", employee);
+const deleteEmployee = (id) => {
+  emit("delete-employee", id);
+  console.log("delete-employe:", id);
+  // Perform delete action here, e.g., call an API or update the state
 };
 </script>
 
